@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/JakobPavlich/pokedex/pokeapi"
 )
 
 func startRepl(c *config) {
@@ -38,6 +40,8 @@ type cliCommand struct {
 
 type config struct {
 	supportedCommands map[string]cliCommand
+	nextURL           string
+	previousURL       *string
 }
 
 func supportedCommands() map[string]cliCommand {
@@ -51,6 +55,16 @@ func supportedCommands() map[string]cliCommand {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
+		},
+		"map": {
+			name:        "map",
+			description: "Displays the next 20 locations",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays the previous 20 locations",
+			callback:    commandMapb,
 		},
 	}
 }
@@ -75,7 +89,26 @@ func commandHelp(c *config) error {
 	fmt.Print("\n")
 	supported := c.supportedCommands
 	for _, command := range supported {
-		fmt.Println(command.name, ":", command.description)
+		fmt.Printf("%s: %s\n", command.name, command.description)
+	}
+	return nil
+}
+
+func commandMap(c *config) error {
+	if c.nextURL == "" {
+		c.nextURL, c.previousURL = pokeapi.GetAreas("")
+	} else {
+		c.nextURL, c.previousURL = pokeapi.GetAreas(c.nextURL)
+	}
+	return nil
+}
+
+func commandMapb(c *config) error {
+	if c.previousURL == nil {
+		// c.nextURL, c.previousURL = pokeapi.GetAreas("")
+		fmt.Println("you're on the first page")
+	} else {
+		c.nextURL, c.previousURL = pokeapi.GetAreas(*c.previousURL)
 	}
 	return nil
 }
