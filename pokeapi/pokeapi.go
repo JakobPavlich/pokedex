@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/JakobPavlich/pokedex/internal"
 )
 
 type Area struct {
@@ -19,6 +21,8 @@ type Area struct {
 }
 
 func GetAreas(pageURL string) (string, *string) {
+	cache := internal.NewCache(5) // še za narest
+	cache.Add(pageURL, []byte{})  // kot tudi to
 	requestURL := "https://pokeapi.co/api/v2/location-area/"
 	if pageURL != "" {
 		requestURL = pageURL
