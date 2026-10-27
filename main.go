@@ -1,8 +1,11 @@
 package main
 
+import "github.com/JakobPavlich/pokedex/internal"
+
 func main() {
 	cfg := &config{
 		supportedCommands: supportedCommands(),
+		cache:             internal.NewCache(5),
 	}
 	startRepl(cfg)
 	// pokeapi.GetAreas()

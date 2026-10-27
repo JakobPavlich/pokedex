@@ -24,7 +24,7 @@ func NewCache(interval int) *Cache {
 		mu:       sync.Mutex{},
 		interval: duration,
 	}
-	newCache.reapLoop(duration)
+	go newCache.reapLoop(duration)
 	return &newCache
 }
 
@@ -49,15 +49,15 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 }
 
 func (c *Cache) reapLoop(duration time.Duration) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 	t := time.NewTicker(time.Second)
 	defer t.Stop()
 	for range t.C {
+		c.mu.Lock()
 		for key, entry := range c.entries {
 			if duration < time.Since(entry.createdAt) {
 				delete(c.entries, key)
 			}
 		}
+		c.mu.Unlock()
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/JakobPavlich/pokedex/internal"
 	"github.com/JakobPavlich/pokedex/pokeapi"
 )
 
@@ -42,6 +43,7 @@ type config struct {
 	supportedCommands map[string]cliCommand
 	nextURL           string
 	previousURL       *string
+	cache             *internal.Cache
 }
 
 func supportedCommands() map[string]cliCommand {
@@ -96,9 +98,9 @@ func commandHelp(c *config) error {
 
 func commandMap(c *config) error {
 	if c.nextURL == "" {
-		c.nextURL, c.previousURL = pokeapi.GetAreas("")
+		c.nextURL, c.previousURL = pokeapi.GetAreas("", c.cache)
 	} else {
-		c.nextURL, c.previousURL = pokeapi.GetAreas(c.nextURL)
+		c.nextURL, c.previousURL = pokeapi.GetAreas(c.nextURL, c.cache)
 	}
 	return nil
 }
@@ -108,7 +110,7 @@ func commandMapb(c *config) error {
 		// c.nextURL, c.previousURL = pokeapi.GetAreas("")
 		fmt.Println("you're on the first page")
 	} else {
-		c.nextURL, c.previousURL = pokeapi.GetAreas(*c.previousURL)
+		c.nextURL, c.previousURL = pokeapi.GetAreas(*c.previousURL, c.cache)
 	}
 	return nil
 }

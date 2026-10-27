@@ -20,26 +20,41 @@ type Area struct {
 	} `json:"results"`
 }
 
-func GetAreas(pageURL string) (string, *string) {
-	cache := internal.NewCache(5) // še za narest
-	cache.Add(pageURL, []byte{})  // kot tudi to
+func GetAreas(pageURL string, cache *internal.Cache) (string, *string) {
 	requestURL := "https://pokeapi.co/api/v2/location-area/"
 	if pageURL != "" {
 		requestURL = pageURL
 	}
-
+	cacheBody, contain := cache.Get(requestURL)
+	if contain {
+		area := Area{}
+		err := json.Unmarshal(cacheBody, &area)
+		if err != nil {
+			fmt.Println(err)
+		}
+		results := area.Results
+		for _, result := range results {
+			fmt.Println(result.Name)
+		}
+		return area.Next, area.Previous
+	}
 	res, err := http.Get(requestURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Po http.Get(): %v", err)
 	}
 
 	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
+	if err != nil {
+		log.Fatalf("Couldnt read the body content: %v:", err)
+	}
+	cache.Add(requestURL, body)
+
 	if res.StatusCode > 299 {
 		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
 	}
+	err = res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Couldnt close the response body: %v", err)
 	}
 
 	area := Area{}
