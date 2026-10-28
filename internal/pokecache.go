@@ -43,13 +43,13 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	defer c.mu.Unlock()
 	entry, found := c.entries[key]
 	if found {
-		return entry.val, found
+		return entry.val, true
 	}
-	return []byte{}, found
+	return []byte{}, false
 }
 
 func (c *Cache) reapLoop(duration time.Duration) {
-	t := time.NewTicker(time.Second)
+	t := time.NewTicker(time.Millisecond)
 	defer t.Stop()
 	for range t.C {
 		c.mu.Lock()
