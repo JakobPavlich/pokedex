@@ -49,6 +49,7 @@ type config struct {
 	nextURL           string
 	previousURL       *string
 	cache             *internal.Cache
+	pokedex           map[string]pokeapi.Pokemon
 }
 
 func supportedCommands() map[string]cliCommand {
@@ -78,6 +79,21 @@ func supportedCommands() map[string]cliCommand {
 			description: "Displays the names of all Pokemon in that area",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch <pokemon>",
+			description: "Tries to catch a Pokemon and add it to the Pokedex",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect <pokemon>",
+			description: "See details about caught Pokemons",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Check all the Pokemons you have caught so far",
+			callback:    commandPokedex,
+		},
 	}
 }
 
@@ -103,6 +119,7 @@ func commandHelp(c *config, parameter string) error {
 	for _, command := range supported {
 		fmt.Printf("%s: %s\n", command.name, command.description)
 	}
+	fmt.Println()
 	return nil
 }
 
@@ -126,12 +143,45 @@ func commandMapb(c *config, parameter string) error {
 }
 
 func commandExplore(c *config, parameter string) error {
-	// TODO: pokeapi.GetPokemonInArea(area string)
-	// če je parameter "" - fmt.print...
 	if parameter == "" {
 		fmt.Println("Command explore needs a parameter (area)")
 	} else {
 		pokeapi.GetPokemonsInArea(parameter, c.cache)
+	}
+	return nil
+}
+
+func commandCatch(c *config, parameter string) error {
+	if parameter == "" {
+		fmt.Println("Command catch needs a parameter (pokemon)")
+	} else {
+		pokeapi.CatchPokemon(parameter, c.cache, c.pokedex)
+	}
+	return nil
+}
+
+func commandInspect(c *config, parameter string) error {
+	if parameter == "" {
+		fmt.Println("Command inspect needs a parameter (pokemon)")
+	} else {
+		pokeapi.InspectPokemon(parameter, c.pokedex)
+	}
+	return nil
+}
+
+func commandPokedex(c *config, parameter string) error {
+	if parameter != "" {
+		fmt.Println("Command pokedex doesn't allow parameters")
+	} else {
+		pokedex := c.pokedex
+		if len(pokedex) == 0 {
+			fmt.Println("Your Pokedex is still empty")
+			return nil
+		}
+		fmt.Println("Your Pokedex:")
+		for name := range pokedex {
+			fmt.Printf(" - %s\n", name)
+		}
 	}
 	return nil
 }

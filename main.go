@@ -1,11 +1,15 @@
 package main
 
-import "github.com/JakobPavlich/pokedex/internal"
+import (
+	"github.com/JakobPavlich/pokedex/internal"
+	"github.com/JakobPavlich/pokedex/pokeapi"
+)
 
 func main() {
 	cfg := &config{
 		supportedCommands: supportedCommands(),
 		cache:             internal.NewCache(5),
+		pokedex:           make(map[string]pokeapi.Pokemon),
 	}
 	startRepl(cfg)
 	// pokeapi.GetAreas()
